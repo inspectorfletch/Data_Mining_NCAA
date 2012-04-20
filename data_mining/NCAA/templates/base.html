@@ -112,6 +112,12 @@
 						xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
 					}
 			});
+			
+			$(document).ready(function() {
+				$('.bracket tr:odd').each(function(){
+					$(this).find('td').addClass('hasTeams');
+				});
+			});
 			</script>
 		</head>
 		<body marginwidth="0" marginheight="0" leftmargin="0" topmargin="0">
@@ -119,105 +125,6 @@
 			<br class="clear"/>
 			<div id="content">
 				{% block body %}
-					<!--ul class="bracketList">
-						<li>
-							<table class="bracket">
-								<tr><td>IT FURKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										DERP
-									</td>
-								</tr>
-								<tr><td>BERKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										RPG
-									</td>
-								</tr>
-							</table>
-						</li>
-						<li>
-							<table class="bracket col2">
-								<tr><td>IT FURKS</td></tr>
-								<tr>
-									<td class="hasTeams bracketCell">
-										BERKS
-									</td>
-								</tr>
-							</table>
-						</li>
-					</ul-->
-					<table class="bracketList">
-						<tr>
-							<td>
-							<table class="bracket">
-								<tr><td>IT FURKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										DERP
-									</td>
-								</tr>
-								<tr><td>BERKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										RPG
-									</td>
-								</tr>
-								<tr><td>MEOW</td></tr>
-								<tr>
-									<td class="hasTeams">
-										BOB
-									</td>
-								</tr>
-								<tr><td>JOHN</td></tr>
-								<tr>
-									<td class="hasTeams">
-										DUDE
-									</td>
-								</tr>
-							</table>
-							</td>
-							<td>
-							<table class="bracket col2">
-								<tr><td>IT FURKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										<br/>BERKS
-									</td>
-								</tr>
-								<tr>
-									<td>
-										<br/>MEOW
-									</td>
-								</tr>
-								<tr>
-									<td class="hasTeams">
-										<br/>DUDE
-									</td>
-								</tr>
-							</table>
-							</td>
-							<td>
-							<table class="bracket">
-								<tr><td>IT FURKS</td></tr>
-								<tr>
-									<td class="hasTeams">
-										<br/><br/><br/>DUDE
-									</td>
-								</tr>
-							</table>
-							</td>
-							<td>
-							<table class="bracket">
-								<tr>
-									<td class="winner">
-										DUDE
-									</td>
-								</tr>
-							</table>
-							</td>
-						</tr>
-					</table>
 				{% endblock %}
 			</div>
 			<br class="clear"/>

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block body %}
+	<form action="/NCAA/simulate/" method="post">
+	{% csrf_token %}
+	<input type="submit" name="submit" value="Simulate!"/>
+	<table class="bracketList">
+		<tr>
+			<td>
+			<table class="bracket">
+				{% for i in 012345678|make_list %}
+				<tr>
+					<td>
+						<select name="team{{i}}">
+							{% for team in teams %}
+								<option value="{{team.year}} {{team.teamname}}">{{team.year}} {{team.teamname}}</option>
+							{% endfor %}
+						</select>
+					</td>
+				</tr>
+				{% endfor %}
+			</table>
+			</td>
+			<td>
+			<table class="bracket col2">
+				<tr><td>IT FURKS</td></tr>
+				<tr>
+					<td class="hasTeams">
+						<br/>BERKS
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<br/>MEOW
+					</td>
+				</tr>
+				<tr>
+					<td class="hasTeams">
+						<br/>DUDE
+					</td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="bracket">
+				<tr><td>IT FURKS</td></tr>
+				<tr>
+					<td class="hasTeams">
+						<br/><br/><br/>DUDE
+					</td>
+				</tr>
+			</table>
+			</td>
+			<td>
+			<table class="bracket">
+				<tr>
+					<td class="winner">
+						DUDE
+					</td>
+				</tr>
+			</table>
+			</td>
+		</tr>
+	</table>
+
+{% endblock %}

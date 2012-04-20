@@ -4,4 +4,5 @@ from data_mining.NCAA.views import *
 urlpatterns = patterns(
 	'NCAA.views',
 	(r'^NCAA/$', index),
+	(r'^NCAA/simulate/$', simulate),
 )
