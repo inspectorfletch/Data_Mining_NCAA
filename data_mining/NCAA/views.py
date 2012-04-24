@@ -7,6 +7,7 @@ from django.shortcuts import render_to_response
 
 from models import *
 import math
+import random
 from decimal import *
 
 class Team: pass
@@ -59,24 +60,44 @@ def simulate(request):
 	else: raise Http404()
 
 def test_cluster():
-	correct = 0
-	incorrect = 0
+	#correct = [0, 0]
+	#incorrect = [0, 0]
+	correct = 0; incorrect = 0
 	for game in Game.objects.all():
 		seasonA = game.teamA
 		seasonB = game.teamB
 		
 		season = Season(teamname='fun', year='0000')
+		#flip = random.choice([True, False])
+		#if flip:
 		for field in seasonA._meta.get_all_field_names():
 			try:
 				setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
 			except TypeError: pass
-		#print season
 		winner = classifyDecisionTree(season)
-		if winner == 'A': correct += 1
+		#print winner
+		#if winner == 'A': correct += 1
+		#else: incorrect += 1
+		
+		
+		#else:
+		for field in seasonA._meta.get_all_field_names():
+			try:
+				setattr(season, field, getattr(seasonB, field) - getattr(seasonA, field))
+			except TypeError: pass
+		#print season
+		winner1 = classifyDecisionTree(season)
+		#if flip:
+		#	if winner == 'B': correct += 1
+		#	else: incorrect += 1
+		#else:
+		#if winner == 'B': correct[1] += 1
+		#else: incorrect[1] += 1
+		if winner == 'A' and winner1 == 'B': correct += 1
 		else: incorrect += 1
 	
-	print "correct: " + str(correct)
-	print "incorrect: " + str(incorrect)
+	print "correct: " + str(correct)# + ' ' + str(correct[1])
+	print "incorrect: " + str(incorrect)# + ' ' + str(incorrect[1])
 
 def classifyCluster(season):
 	cluster1 = Season(teamname="cluster1", year="0001",
@@ -227,7 +248,7 @@ def classifyDecisionTree(season):
 								if season.field_goal_percentage_allowed <= -3.5: return 'A'
 								if season.field_goal_percentage_allowed > -3.5: return 'B'
 							if season.field_goal_percentage > 2.1: return 'A'
-						if season.pf_per_game > 2.4: A (6.0/1.0)
+						if season.pf_per_game > 2.4: return 'A'
 					if season.three_point_percentage_allowed > 0.2: return 'B'
 			if season.ppg > 6.9:
 				if season.ppg_allowed <= 10.8:
@@ -237,7 +258,7 @@ def classifyDecisionTree(season):
 						if season.free_throw_percentage > -1.6: return 'A'
 				if season.ppg_allowed > 10.8:
 					if season.pf_per_game <= 3.2: return 'B'
-					if season.pf_per_game > 3.2: A (3.0)
+					if season.pf_per_game > 3.2: return 'A'
 	if season.wins > 1:
 		if season.wins <= 5:
 			if season.pf_per_game <= 2.1:
