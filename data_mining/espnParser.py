@@ -56,7 +56,7 @@ class ESPNParser(HTMLParser):
 									steals_per_game_allowed=(self.row[12]),
 									turnovers_per_game_against=(self.row[13]),
 									blocks_per_game_against=(self.row[14]))
-					#season.save()
+					season.save()
 					
 					print season
 				elif self.PARSE_MODE == 'off':
@@ -76,8 +76,8 @@ class ESPNParser(HTMLParser):
 						season.blocks_per_game=(self.row[14])
 						#print self.row
 						
-						#season.save()						
-						print season
+						season.save()						
+						#print season
 					except Exception as inst:
 						print "Error occured in parsing team : " + str(self.row[0])
 						print inst
@@ -113,8 +113,8 @@ class ESPNParser(HTMLParser):
 									steals_per_game_allowed=(self.row[12]),
 									turnovers_per_game_against=(self.row[13]),
 									blocks_per_game_against=(self.row[14]))
-					#season.save()
-					print season
+					season.save()
+					#print season
 				elif self.PARSE_MODE == 'off':
 					try:
 						season = Season.objects.get(teamname=self.row[0], year=self.year)
@@ -131,8 +131,8 @@ class ESPNParser(HTMLParser):
 						season.turnovers_per_game=(self.row[13])
 						season.blocks_per_game=(self.row[14])
 						
-						#season.save()						
-						print season
+						season.save()						
+						#print season
 					except Exception as inst:
 						print "Error occured in parsing team : " + str(self.row[0])
 						print inst
@@ -148,7 +148,7 @@ class ESPNParser(HTMLParser):
 def parse_pages():
 	#for year in range(1998, 2012):
 	year = 2012
-	for mode in ['def']:#, 'off']:
+	for mode in ['def', 'off']:
 		print "Reading "+mode+"ensive statistics from "+str(year)
 		parser = ESPNParser()
 		parser.PARSE_MODE = mode

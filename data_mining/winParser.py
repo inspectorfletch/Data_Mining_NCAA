@@ -1,7 +1,7 @@
 from HTMLParser import HTMLParser, HTMLParseError
 import urllib
 
-#from NCAA.models import *
+from NCAA.models import *
 
 class ESPNParser(HTMLParser):
 	def __init__(self):
@@ -20,7 +20,7 @@ class ESPNParser(HTMLParser):
 			#print attrs
 			for name, value in attrs:
 				if name == 'class' and value == 'table_body':
-					print 'dude'
+					#print 'dude'
 					self.inTable = True
 					break
 					
@@ -29,7 +29,24 @@ class ESPNParser(HTMLParser):
 				if self.inTable and name == 'class' and (value == 'table_data' or value == 'table_data_odd'):
 					#print 'josh is awesome'
 					if self.row:
-						print self.row
+						team = ''; record=''
+						if self.row[0] == '(': team = self.row[3]; record=self.row[5]
+						else: team = self.row[0]; record = self.row[2]
+						#print team, record
+						if team == 'WM':
+							team = 'WM&MARY'
+							record = self.row[4]
+						
+						record = record.split('-')
+						try:
+							season = Season.objects.get(year=2012, teamname=team)
+							setattr(season, 'wins', int(record[0]))
+							setattr(season, 'losses', int(record[1]))
+							
+							#print season
+							season.save()
+						except Season.DoesNotExist:
+							print team
 						self.row = []
 					self.inRow = True
 					break
@@ -39,7 +56,25 @@ class ESPNParser(HTMLParser):
 				if name == 'class' and value == 'table_sort':
 					self.inRow = False
 					if self.row:
-						print self.row
+						team = ''; record=''
+						if self.row[0] == '(': team = self.row[3]; record=self.row[5]
+						else: team = self.row[0]; record = self.row[2]
+						
+						if team == 'WM':
+							team = 'WM&MARY'
+							record = self.row[4]
+						
+						#print team, record
+						record = record.split('-')
+						try:
+							season = Season.objects.get(year=2012, teamname=team)
+							setattr(season, 'wins', int(record[0]))
+							setattr(season, 'losses', int(record[1]))
+							
+							#print season
+							season.save()
+						except Season.DoesNotExist:
+							print team
 						self.row = []
 		
 		elif tag == 'a':
@@ -58,7 +93,23 @@ class ESPNParser(HTMLParser):
 					print "Error occured in parsing team : " + str(self.row[0])
 					print inst
 				"""
-				print self.row
+				team = ''; record=''
+				if self.row[0] == '(': team = self.row[3]; record=self.row[5]
+				else: team = self.row[0]; record = self.row[2]
+				#print team, record
+				if team == 'WM':
+					team = 'WM&MARY'
+					record = self.row[4]
+				record = record.split('-')
+				try:
+					season = Season.objects.get(year=2012, teamname=team)
+					setattr(season, 'wins', int(record[0]))
+					setattr(season, 'losses', int(record[1]))
+					
+					#print season
+					season.save()
+				except Season.DoesNotExist:
+					print team
 				self.row = []
 				self.inRow = False
 			
@@ -85,8 +136,8 @@ class ESPNParser(HTMLParser):
 			#print data.strip()
 			self.row.append(data.strip())
 
-if __name__ == '__main__':
-	#def parse_pages():
+#if __name__ == '__main__':
+def parse_pages():
 	#for year in range(1998, 2012):
 	year = 2012
 	print "Reading standings from "+str(year)

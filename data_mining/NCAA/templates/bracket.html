@@ -4,6 +4,11 @@
 	<form action="/NCAA/simulate/" method="post">
 	{% csrf_token %}
 	<input type="submit" name="submit" value="Simulate!"/>
+	<select name="classifier">
+		<option value="cluster">Cluster (simple)</option>
+		<option value="cluster_normalize">Cluster (normalize)</option>
+		<option value="decision_tree">Decision tree (bad)</option>
+	</select>
 	<table class="bracketList">
 		<tr>
 			<td>

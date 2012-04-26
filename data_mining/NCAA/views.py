@@ -64,81 +64,172 @@ def test_cluster():
 	#incorrect = [0, 0]
 	correct = 0; incorrect = 0
 	for game in Game.objects.all():
-		seasonA = game.teamA
-		seasonB = game.teamB
-		
-		season = Season(teamname='fun', year='0000')
-		#flip = random.choice([True, False])
-		#if flip:
-		for field in seasonA._meta.get_all_field_names():
-			try:
-				setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
-			except TypeError: pass
-		winner = classifyDecisionTree(season)
-		#print winner
-		#if winner == 'A': correct += 1
-		#else: incorrect += 1
-		
-		
-		#else:
-		for field in seasonA._meta.get_all_field_names():
-			try:
-				setattr(season, field, getattr(seasonB, field) - getattr(seasonA, field))
-			except TypeError: pass
-		#print season
-		winner1 = classifyDecisionTree(season)
-		#if flip:
-		#	if winner == 'B': correct += 1
-		#	else: incorrect += 1
-		#else:
-		#if winner == 'B': correct[1] += 1
-		#else: incorrect[1] += 1
-		if winner == 'A' and winner1 == 'B': correct += 1
-		else: incorrect += 1
+		if game.teamA.year == 2012:
+			seasonA = game.teamA
+			seasonB = game.teamB
+			
+			season = Season(teamname='fun', year='0000')
+			#flip = random.choice([True, False])
+			#if flip:
+			for field in seasonA._meta.get_all_field_names():
+				try:
+					fieldA = getattr(seasonA, field)
+					fieldB = getattr(seasonB, field)
+					if not fieldA or not fieldB:
+						print seasonA
+						print seasonB
+					setattr(season, field, fieldA - fieldB)#((fieldA - fieldB)/(fieldA+fieldB)))#field, fieldA - fieldB)
+				except TypeError: pass
+			winner = classifyCluster(season)
+			#print winner
+			#if winner == 'A': correct += 1
+			#else: incorrect += 1
+			
+			
+			#else:
+			#for field in seasonA._meta.get_all_field_names():
+			#	try:
+			#		setattr(season, field, getattr(seasonB, field) - getattr(seasonA, field))
+			#	except TypeError: pass
+			#print season
+			#winner1 = classifyDecisionTree(season)
+			#if flip:
+			#	if winner == 'B': correct += 1
+			#	else: incorrect += 1
+			#else:
+			if winner == 'A': correct += 1
+			else: incorrect += 1
+			#if winner == 'B': correct[1] += 1
+			#else: incorrect[1] += 1
+			#if winner == 'A' and winner1 == 'B': correct += 1
+			#else: incorrect += 1
 	
 	print "correct: " + str(correct)# + ' ' + str(correct[1])
 	print "incorrect: " + str(incorrect)# + ' ' + str(incorrect[1])
 
-def classifyCluster(season):
-	cluster1 = Season(teamname="cluster1", year="0001",
-					  assists_per_game=1.1914,
-					  assists_per_game_allowed=0.6377,
-					  blocks_per_game=1.1207,
-					  blocks_per_game_against=0.3852,
-					  field_goal_percentage=0.787,
-					  field_goal_percentage_allowed=-0.6614,
-					  free_throw_percentage=-0.4509,
-					  free_throw_percentage_allowed=-0.8145,
-					  losses=-1.4,
-					  offensive_rebounds_per_game=1.6393,
-					  offensive_rebounds_per_game_allowed=1.173,
-					  pf_per_game=0.3923,
-					  pf_per_game_allowed=0.8216,
-					  ppg=6.0602,
-					  ppg_allowed=2.7614,
-					  rebounds_per_game=2.9518,
-					  rebounds_per_game_allowed=1.678,
-					  steals_per_game=1.0841,
-					  steals_per_game_allowed=0.4589,
-					  three_point_percentage=0.048,
-					  three_point_percentage_allowed=-0.4152,
-					  turnovers_per_game=0.6077,
-					  turnovers_per_game_against=1.2564,
-					  wins=1.7136)
-	cluster2 = Season(teamname="cluster2", year="0002",
-					  assists_per_game	=	0.0025,					  
-					  assists_per_game_allowed=	-0.8718,					  blocks_per_game=	-0.3486,					  
-					  blocks_per_game_against=	-0.2873,					  field_goal_percentage=	0.8052,					  
-					  field_goal_percentage_allowed=	-0.5511,					  free_throw_percentage=	1.4052,
-					  free_throw_percentage_allowed=	0.6211,					  losses=	-1.5955,
-					  offensive_rebounds_per_game=	-0.7314,					  offensive_rebounds_per_game_allowed=	-0.9782,					  pf_per_game=	-1.1964,					  pf_per_game_allowed=	-0.6286,					  ppg=	-1.5173,					  ppg_allowed=	-3.8555,					  rebounds_per_game=	-1.1434,					  rebounds_per_game_allowed=	-2.2555,					  steals_per_game=	-0.8982,					  steals_per_game_allowed=	-0.7543,					  three_point_percentage=	0.9016,					  three_point_percentage_allowed=	-0.4755,					  turnovers_per_game=	-1.3825,					  turnovers_per_game_against=	-1.3948,					  wins=	1.8523)
-					  
-	distanceACluster1 = 0
+def classifyCluster(season, normalize=False, num_clusters=2):
+	clusters = []
+	if not normalize:
+		clusters.append(Season(teamname="cluster1", year="0001",
+						  assists_per_game=1.1914,
+						  assists_per_game_allowed=0.6377,
+						  blocks_per_game=1.1207,
+						  blocks_per_game_against=0.3852,
+						  field_goal_percentage=0.787,
+						  field_goal_percentage_allowed=-0.6614,
+						  free_throw_percentage=-0.4509,
+						  free_throw_percentage_allowed=-0.8145,
+						  losses=-1.4,
+						  offensive_rebounds_per_game=1.6393,
+						  offensive_rebounds_per_game_allowed=1.173,
+						  pf_per_game=0.3923,
+						  pf_per_game_allowed=0.8216,
+						  ppg=6.0602,
+						  ppg_allowed=2.7614,
+						  rebounds_per_game=2.9518,
+						  rebounds_per_game_allowed=1.678,
+						  steals_per_game=1.0841,
+						  steals_per_game_allowed=0.4589,
+						  three_point_percentage=0.048,
+						  three_point_percentage_allowed=-0.4152,
+						  turnovers_per_game=0.6077,
+						  turnovers_per_game_against=1.2564,
+						  wins=1.7136))
+		clusters.append(Season(teamname="cluster2", year="0002",
+						  assists_per_game	=	0.0025,					  
+						  assists_per_game_allowed=	-0.8718,						  blocks_per_game=	-0.3486,					  
+						  blocks_per_game_against=	-0.2873,						  field_goal_percentage=	0.8052,					  
+						  field_goal_percentage_allowed=	-0.5511,						  free_throw_percentage=	1.4052,
+						  free_throw_percentage_allowed=	0.6211,						  losses=	-1.5955,
+						  offensive_rebounds_per_game=	-0.7314,						  offensive_rebounds_per_game_allowed=	-0.9782,						  pf_per_game=	-1.1964,						  pf_per_game_allowed=	-0.6286,						  ppg=	-1.5173,						  ppg_allowed=	-3.8555,						  rebounds_per_game=	-1.1434,						  rebounds_per_game_allowed=	-2.2555,						  steals_per_game=	-0.8982,						  steals_per_game_allowed=	-0.7543,						  three_point_percentage=	0.9016,						  three_point_percentage_allowed=	-0.4755,						  turnovers_per_game=	-1.3825,						  turnovers_per_game_against=	-1.3948,						  wins=	1.8523))
+	else:
+		clusters.append(Season(teamname="cluster1", year="0001",
+						  assists_per_game	=	0.1357	,
+						  assists_per_game_allowed	=	0.0785	,
+						  blocks_per_game	=	0.1805	,
+						  blocks_per_game_against	=	0.1561	,
+						  field_goal_percentage	=	0.0658	,
+						  field_goal_percentage_allowed	=	-0.0856	,
+						  free_throw_percentage	=	-0.0299	,
+						  free_throw_percentage_allowed	=	-0.0794	,
+						  losses	=	-0.1332	,
+						  offensive_rebounds_per_game	=	0.1998	,
+						  offensive_rebounds_per_game_allowed	=	0.2202	,
+						  pf_per_game	=	0.0609	,
+						  pf_per_game_allowed	=	0.1274	,
+						  ppg	=	0.2207	,
+						  ppg_allowed	=	0.1145	,
+						  rebounds_per_game	=	0.1643	,
+						  rebounds_per_game_allowed	=	0.154	,
+						  steals_per_game	=	0.159	,
+						  steals_per_game_allowed	=	0.1157	,
+						  three_point_percentage	=	0.0046	,
+						  three_point_percentage_allowed	=	-0.0524	,
+						  turnovers_per_game	=	0.0908	,
+						  turnovers_per_game_against	=	0.1585	,
+						  wins	=	0.0851))
+		clusters.append(Season(teamname="cluster2", year="0002",
+						  assists_per_game	=	-0.0014	,
+						  assists_per_game_allowed	=	-0.1071	,
+						  blocks_per_game	=	-0.0572	,
+						  blocks_per_game_against	=	-0.1148	,
+						  field_goal_percentage	=	0.0602	,
+						  field_goal_percentage_allowed	=	-0.0624	,
+						  free_throw_percentage	=	0.0879	,
+						  free_throw_percentage_allowed	=	0.0604	,
+						  losses	=	-0.1388	,
+						  offensive_rebounds_per_game	=	-0.0896	,
+						  offensive_rebounds_per_game_allowed	=	-0.182	,
+						  pf_per_game	=	-0.186	,
+						  pf_per_game_allowed	=	-0.0974	,
+						  ppg	=	-0.0565	,
+						  ppg_allowed	=	-0.1598	,
+						  rebounds_per_game	=	-0.0651	,
+						  rebounds_per_game_allowed	=	-0.2073	,
+						  steals_per_game	=	-0.1311	,
+						  steals_per_game_allowed	=	-0.1886	,
+						  three_point_percentage	=	0.0731	,
+						  three_point_percentage_allowed	=	-0.0501	,
+						  turnovers_per_game	=	-0.2043	,
+						  turnovers_per_game_against	=	-0.1755	,
+						  wins	=	0.0853))
+	
+	distances = []
+	# Get distance from instance to each cluster
+	for cluster in clusters:
+		distance = 0
+		for field in season._meta.get_all_field_names():
+			if field not in skip_fields:
+				val1 = float(getattr(season, field))
+				val2 = getattr(cluster, field)
+				
+				distance += math.pow(val1 - val2, 2)
+		distances.append(math.sqrt(distance))
+	
+	# Flip the instance around (switch teamA and teamB)
+	for field in season._meta.get_all_field_names():
+		if field not in skip_fields:
+			setattr(season, field, getattr(season, field) * -1)
+	
+	# Get distances for the other way around
+	for cluster in clusters:
+		distance = 0
+		for field in season._meta.get_all_field_names():
+			if field not in skip_fields:
+				val1 = float(getattr(season, field))
+				val2 = getattr(cluster, field)
+				
+				distance += math.pow(val1 - val2, 2)
+		distances.append(math.sqrt(distance))
+	
+	"""distanceACluster1 = 0
 	for field in season._meta.get_all_field_names():
 		if field not in skip_fields:
 			val1 = float(getattr(season, field))
 			val2 = getattr(cluster1, field)
-			try: distanceACluster1 += math.exp((val1 - val2)/(val1 + val2))
+			try: 
+				distanceACluster1 += math.pow((val1 - val2)/(val1 + val2), 2)
+				#distanceACluster1 += math.pow((val1 - val2),2)
 			except OverflowError: break
 	distanceACluster1 = math.sqrt(distanceACluster1)
 	
@@ -147,7 +238,9 @@ def classifyCluster(season):
 		if field not in skip_fields:
 			val1 = float(getattr(season, field))
 			val2 = getattr(cluster2, field)
-			try: distanceACluster2 += math.exp((val1 - val2)/(val1 + val2))
+			try: 
+				distanceACluster2 += math.pow((val1 - val2)/(val1 + val2), 2)
+				#distanceACluster2 += math.pow((val1 - val2), 2)
 			except OverflowError: break
 	distanceACluster2 = math.sqrt(distanceACluster2)
 
@@ -160,7 +253,9 @@ def classifyCluster(season):
 		if field not in skip_fields:
 			val1 = float(getattr(season, field))
 			val2 = getattr(cluster1, field)
-			try: distanceBCluster1 += math.exp((val1 - val2)/(val1 + val2))
+			try: 
+				distanceBCluster1 += math.pow((val1 - val2)/(val1 + val2), 2)
+				#distanceBCluster1 += math.pow((val1 - val2),2)
 			except OverflowError: break
 	distanceBCluster1 = math.sqrt(distanceBCluster1)
 	
@@ -170,7 +265,8 @@ def classifyCluster(season):
 			val1 = float(getattr(season, field))
 			val2 = getattr(cluster2, field)
 			try:
-				distanceBCluster2 += math.exp((val1 - val2)/(val1 + val2))
+				distanceBCluster2 += math.pow((val1 - val2)/(val1 + val2), 2)
+				#distanceBCluster2 += math.pow((val1 - val2),2)
 			except OverflowError: break
 	distanceBCluster2 = math.sqrt(distanceBCluster2)
 	
@@ -178,10 +274,28 @@ def classifyCluster(season):
 	print distanceACluster2
 	print distanceBCluster1
 	print distanceBCluster2
+	"""
 	
-	minDistance = min(distanceACluster1, distanceACluster2, distanceBCluster1, distanceBCluster2)
-	if (minDistance == distanceACluster1 or minDistance == distanceACluster2): return 'A'
-	else: return 'B'
+	#minDistance = min(distanceACluster1, distanceACluster2, distanceBCluster1, distanceBCluster2)
+	#if (minDistance == distanceACluster1 or minDistance == distanceACluster2): return 'A'
+	#else: return 'B'
+	for distance in distances:
+		print distance
+	
+	minCluster = 0; minDistance = float('inf')
+	for i, distance in enumerate(distances):
+		if distance < minDistance:
+			minDistance = distance
+			minCluster = i
+	print minDistance, minCluster, len(clusters)
+	
+	if minCluster < len(clusters): 
+		print 'A\n'
+		return 'A'
+	else:
+		print 'B\n'
+		return 'B'
+		
 	
 def classifyDecisionTree(season):
 	if season.wins <= 1:
