@@ -1,7 +1,26 @@
 {% extends 'base.html' %}
 
 {% block script %}
+	<script type="text/javascript">
+		{% if selectedTeams %}
+			$(document).ready(function() {
+				var selectedTeams = [{% for team in selectedTeams %}
+										"{{team}}"
+									{% ifnotequal forloop.counter selectedTeams|length %},{% endifnotequal %}{% endfor %}];
+				var numGames = parseInt($('#number_of_games')[0].options[$('#number_of_games')[0].options.selectedIndex].text);
 
+				for (var i=0; i<numGames; i++) {
+					var currentList = $('.teamList')[i];
+					for (var j=0; j<currentList.length; j++) {
+						if (currentList.options[j].text == selectedTeams[i]) {
+							currentList.options[j].selected = true;
+							break;
+						}
+					}
+				}
+			});
+		{% endif %}
+	</script>
 {% endblock %}
 
 {% block body %}
@@ -14,8 +33,9 @@
 		<option value="cluster_normalize">Cluster (normalize)</option>
 		<option value="decision_tree">Decision tree (bad)</option>
 	</select>
-	<select name="number_of_games">
+	<select id="number_of_games" name="number_of_games">
 		<option value="8">8</option>
+		<option value="16">16</option>
 	</select>
 	<table class="bracketList">
 		<tr>
@@ -24,9 +44,11 @@
 				{% for i in numGames_list %}
 				<tr>
 					<td>
-						<select name="team{{i}}">
+						<select class="teamList" name="team{{i}}">
 							{% for team in teams %}
-								<option value="{{team.year}} {{team.teamname}}">{{team.year}} {{team.teamname}}</option>
+								<option value="{{team.year}} {{team.teamname}}">
+									{{team.year}} {{team.teamname}}
+								</option>
 							{% endfor %}
 						</select>
 					</td>

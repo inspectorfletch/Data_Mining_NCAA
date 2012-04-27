@@ -17,6 +17,7 @@ skip_fields = ['teamA', 'teamB', 'id', 'teamname', 'year']
 
 def index(request):
 	teams = [team for team in Season.objects.all() if team.wins]
+	numGames_list = [i for i in range(1, 9)]
 	return render_to_response('bracket.html',
 							  locals(),
 							  context_instance=RequestContext(request))
@@ -25,7 +26,11 @@ def bracket(request):
 	if request.POST:
 		classifier = request.POST['classifier']
 		numGames = int(request.POST['number_of_games'])
+		
 		numGames_list = [i for i in range(1, numGames+1)]
+		selectedTeams = [request.POST['team'+str(i)] for i in range(1, numGames+1)]
+		print selectedTeams
+		
 		teams = []
 		bracketTeams = []
 		games = []
@@ -152,7 +157,7 @@ def bracket(request):
 								  locals(),
 								  context_instance = RequestContext(request))
 			
-	else: raise Http404()
+	else: return HttpResponseRedirect('/NCAA/')
 
 def simulate(request):
 	if request.POST:
