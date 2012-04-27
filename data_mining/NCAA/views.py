@@ -153,6 +153,7 @@ def bracket(request):
 				round.append(bracketTeams.pop(0))
 			games.append(round)
 		teams = [team for team in Season.objects.all() if team.wins]
+		numGames = int(request.POST['number_of_games'])
 		return render_to_response('bracket.html',
 								  locals(),
 								  context_instance = RequestContext(request))
