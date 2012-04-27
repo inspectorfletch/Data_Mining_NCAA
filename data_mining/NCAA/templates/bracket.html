@@ -1,19 +1,27 @@
 {% extends 'base.html' %}
 
+{% block script %}
+
+{% endblock %}
+
 {% block body %}
 	<form action="/NCAA/simulate/" method="post">
 	{% csrf_token %}
 	<input type="submit" name="submit" value="Simulate!"/>
+	<input type="submit" name="test" value="Test!"/>
 	<select name="classifier">
 		<option value="cluster">Cluster (simple)</option>
 		<option value="cluster_normalize">Cluster (normalize)</option>
 		<option value="decision_tree">Decision tree (bad)</option>
 	</select>
+	<select name="number_of_games">
+		<option value="8">8</option>
+	</select>
 	<table class="bracketList">
 		<tr>
 			<td>
 			<table class="bracket">
-				{% for i in 012345678|make_list %}
+				{% for i in numGames_list %}
 				<tr>
 					<td>
 						<select name="team{{i}}">
@@ -26,11 +34,23 @@
 				{% endfor %}
 			</table>
 			</td>
-			<td>
-			<table class="bracket col2">
+			{% for round in games %}
+				<td>
+					<table class="bracket">
+						{% ifequal round|length 1 %}
+							<tr><td class="winner">{{ round.0 }}</td></tr>
+						{% else %}
+							{% for game in round %}
+								<tr><td>{{ game }}</td></tr>
+							{% endfor %}
+						{% endifequal %}
+					</table>
+				</td>
+			{% endfor %}
+			<!--table class="bracket">
 				<tr><td>IT FURKS</td></tr>
 				<tr>
-					<td class="hasTeams">
+					<td>
 						<br/>BERKS
 					</td>
 				</tr>
@@ -40,7 +60,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td class="hasTeams">
+					<td>
 						<br/>DUDE
 					</td>
 				</tr>
@@ -50,7 +70,7 @@
 			<table class="bracket">
 				<tr><td>IT FURKS</td></tr>
 				<tr>
-					<td class="hasTeams">
+					<td>
 						<br/><br/><br/>DUDE
 					</td>
 				</tr>
@@ -59,12 +79,11 @@
 			<td>
 			<table class="bracket">
 				<tr>
-					<td class="winner">
+					<td>
 						DUDE
 					</td>
 				</tr>
-			</table>
-			</td>
+			</table-->
 		</tr>
 	</table>
 

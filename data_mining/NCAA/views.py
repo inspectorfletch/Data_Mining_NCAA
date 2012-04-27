@@ -2,6 +2,7 @@
 
 from django.template import RequestContext
 from django.http import HttpResponseRedirect, Http404, HttpResponse
+from django.utils.datastructures import MultiValueDictKeyError
 
 from django.shortcuts import render_to_response
 
@@ -20,8 +21,148 @@ def index(request):
 							  locals(),
 							  context_instance=RequestContext(request))
 
+def bracket(request):
+	if request.POST:
+		classifier = request.POST['classifier']
+		numGames = int(request.POST['number_of_games'])
+		numGames_list = [i for i in range(1, numGames+1)]
+		teams = []
+		bracketTeams = []
+		games = []
+		for i in range(1, numGames+1, 2):
+			teamSet = []
+			
+			teamstats = request.POST['team'+str(i)].split(' ')
+			print 'team'+str(i)
+			#print teamstats
+			teamA = Team()
+			teamA.year = teamstats[0]
+			teamA.teamname = teamstats[1]
+			if len(teamstats) > 2:
+				teamA.teamname += ' '
+				for j in range(2, len(teamstats)):
+					teamA.teamname = teamA.teamname + teamstats[j]
+					if j < len(teamstats)-1:
+						teamA.teamname = teamA.teamname + ' '
+			seasonA = Season.objects.get(teamname=teamA.teamname, year=teamA.year)
+			teamSet.append(seasonA)
+			#print seasonA
+			#bracketTeams.append(str(seasonA.year) + ' ' + str(seasonA.teamname))
+			
+			teamstats = request.POST['team'+str(i+1)].split(' ')
+			print 'team'+str(i+1)
+			#print teamstats
+			teamB = Team()
+			teamB.year = teamstats[0]
+			teamB.teamname = teamstats[1]
+			if len(teamstats) > 2:
+				teamB.teamname += ' '
+				for j in range(2, len(teamstats)):
+					teamB.teamname = teamB.teamname + teamstats[j]
+					if j < len(teamstats)-1:
+						teamB.teamname = teamB.teamname + ' '
+			seasonB = Season.objects.get(teamname=teamB.teamname, year=teamB.year)
+			teamSet.append(seasonB)
+			#print seasonB
+			#bracketTeams.append(str(seasonB.year) + ' ' + str(seasonB.teamname))
+
+			season = Season(teamname='fun', year='0000')
+			for field in seasonA._meta.get_all_field_names():
+				if field not in skip_fields:
+					if classifier.split('_')[len(classifier.split('_'))-1] == 'normalize':
+						fieldA = getattr(seasonA, field)
+						fieldB = getattr(seasonB, field)
+						#setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
+						setattr(season, field, fieldA - fieldB)
+					else: setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
+			#print season
+			games.append(season)
+			teams.append(teamSet)
+		
+		teamA = None; teamB = None
+		while len(games) > 0:
+			game = games.pop(0)
+			teamSet = teams.pop(0)
+			
+			if classifier == 'cluster':
+				winner = classifyCluster(game)
+			elif classifier == 'cluster_normalize':
+				winner = classifyCluster(game, True)
+			elif classifier == 'decision_tree':
+				winner = classifyDecisionTree(game)
+			
+			if winner == 'A':
+				if not teamA:
+					teamA = teamSet[0]
+					bracketTeams.append(str(teamA.year) + ' ' + str(teamA.teamname))
+				else:
+					teamB = teamSet[0]
+					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
+					t = [teamA, teamB]
+					print t
+					teams.append(t)
+					
+					season = Season(teamname='fun', year='0000')
+					for field in teamA._meta.get_all_field_names():
+						if field not in skip_fields:
+							if classifier.split('_')[len(classifier.split('_'))-1] == 'normalize':
+								fieldA = getattr(teamA, field)
+								fieldB = getattr(teamB, field)
+								#setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
+								setattr(season, field, fieldA - fieldB)
+							else: setattr(season, field, getattr(teamA, field) - getattr(teamB, field))
+					
+					teamA = None; teamB = None
+					games.append(season)
+					#print season
+			else:
+				if not teamA:
+					teamA = teamSet[1]
+					bracketTeams.append(str(teamA.year) + ' ' + str(teamA.teamname))
+				else:
+					teamB = teamSet[1]
+					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
+					t = [teamA, teamB]
+					print t
+					teams.append(t)
+					
+					season = Season(teamname='fun', year='0000')
+					for field in teamA._meta.get_all_field_names():
+						if field not in skip_fields:
+							if classifier.split('_')[len(classifier.split('_'))-1] == 'normalize':
+								fieldA = getattr(teamA, field)
+								fieldB = getattr(teamB, field)
+								#setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
+								setattr(season, field, fieldA - fieldB)
+							else: setattr(season, field, getattr(teamA, field) - getattr(teamB, field))
+					
+					teamA = None; teamB = None
+					games.append(season)
+					#print season
+		#games = [['Berks', 'Ohio State', 'Shit', 'Shit State'], ['Shit A&M', 'Terra Tech'], ['Kate']]
+		games = []
+		while numGames > 0:
+			numGames /= 2
+			round = []
+			for i in range(numGames):
+				round.append(bracketTeams.pop(0))
+			games.append(round)
+		teams = [team for team in Season.objects.all() if team.wins]
+		return render_to_response('bracket.html',
+								  locals(),
+								  context_instance = RequestContext(request))
+			
+	else: raise Http404()
+
 def simulate(request):
 	if request.POST:
+		classifier = request.POST['classifier']
+		try:
+			request.POST['test']
+			test(classifier)
+			return HttpResponseRedirect('/NCAA/')
+		except MultiValueDictKeyError: pass
+		
 		teamstats = request.POST['team1'].split(' ')
 		teamA = Team()
 		teamA.year = teamstats[0]
@@ -48,43 +189,48 @@ def simulate(request):
 		
 		season = Season(teamname='fun', year='0000')
 		for field in seasonA._meta.get_all_field_names():
-			try:
-				setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
-			except TypeError: pass
+			if field not in skip_fields:
+				if classifier.split('_')[len(classifier.split('_'))-1] == 'normalize':
+					fieldA = getattr(seasonA, field)
+					fieldB = getattr(seasonB, field)
+					setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
+					#setattr(season, field, fieldA - fieldB)
+				else: setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
 		print season
 		
-		#winner = classifyCluster(season)
-		test_cluster()
-		#print 'WINNER: ' + winner
+		if classifier == 'cluster':
+			winner = classifyCluster(season)
+		elif classifier == 'cluster_normalize':
+			winner = classifyCluster(season, True)
+		elif classifier == 'decision_tree':
+			winner = classifyDecisionTree(season)
+		print 'WINNER: ' + winner
 		return HttpResponseRedirect('/NCAA/')
 	else: raise Http404()
 
-def test_cluster():
-	#correct = [0, 0]
-	#incorrect = [0, 0]
+def test(classifier='cluster', startYear=2012, endYear=2012):
 	correct = 0; incorrect = 0
 	for game in Game.objects.all():
-		if game.teamA.year == 2012:
+		if game.teamA.year >= startYear and game.teamA.year <= endYear:
 			seasonA = game.teamA
 			seasonB = game.teamB
 			
 			season = Season(teamname='fun', year='0000')
-			#flip = random.choice([True, False])
-			#if flip:
 			for field in seasonA._meta.get_all_field_names():
 				try:
-					fieldA = getattr(seasonA, field)
-					fieldB = getattr(seasonB, field)
-					if not fieldA or not fieldB:
-						print seasonA
-						print seasonB
-					setattr(season, field, fieldA - fieldB)#((fieldA - fieldB)/(fieldA+fieldB)))#field, fieldA - fieldB)
+					if classifier.split('_')[len(classifier.split('_'))-1] == 'normalize':
+						fieldA = getattr(seasonA, field)
+						fieldB = getattr(seasonB, field)
+						setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
+						#setattr(season, field, fieldA - fieldB)
+					else: setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
 				except TypeError: pass
-			winner = classifyCluster(season)
-			#print winner
-			#if winner == 'A': correct += 1
-			#else: incorrect += 1
-			
+			if classifier == 'cluster':
+				winner = classifyCluster(season)
+			elif classifier == 'cluster_normalize':
+				winner = classifyCluster(season, True)
+			elif classifier == 'decision_tree':
+				winner = classifyDecisionTree(season)			
 			
 			#else:
 			#for field in seasonA._meta.get_all_field_names():
@@ -203,6 +349,7 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 				val1 = float(getattr(season, field))
 				val2 = getattr(cluster, field)
 				
+				#distance += math.pow((val1 - val2)/(val1 + val2), 2)
 				distance += math.pow(val1 - val2, 2)
 		distances.append(math.sqrt(distance))
 	
@@ -219,6 +366,7 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 				val1 = float(getattr(season, field))
 				val2 = getattr(cluster, field)
 				
+				#distance += math.pow((val1 - val2)/(val1 + val2), 2)
 				distance += math.pow(val1 - val2, 2)
 		distances.append(math.sqrt(distance))
 	
@@ -276,24 +424,21 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 	print distanceBCluster2
 	"""
 	
-	#minDistance = min(distanceACluster1, distanceACluster2, distanceBCluster1, distanceBCluster2)
-	#if (minDistance == distanceACluster1 or minDistance == distanceACluster2): return 'A'
-	#else: return 'B'
-	for distance in distances:
-		print distance
+	#for distance in distances:
+	#	print distance
 	
 	minCluster = 0; minDistance = float('inf')
 	for i, distance in enumerate(distances):
 		if distance < minDistance:
 			minDistance = distance
 			minCluster = i
-	print minDistance, minCluster, len(clusters)
+	#print minDistance, minCluster, len(clusters)
 	
 	if minCluster < len(clusters): 
-		print 'A\n'
+		#print 'A\n'
 		return 'A'
 	else:
-		print 'B\n'
+		#print 'B\n'
 		return 'B'
 		
 	
