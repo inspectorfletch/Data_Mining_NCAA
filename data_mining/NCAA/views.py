@@ -11,6 +11,8 @@ import math
 import random
 from decimal import *
 
+from classifier import *
+
 class Team: pass
 
 skip_fields = ['teamA', 'teamB', 'id', 'teamname', 'year']
@@ -25,6 +27,12 @@ def index(request):
 def bracket(request):
 	if request.POST:
 		classifier = request.POST['classifier']
+		try:
+			request.POST['test']
+			test(classifier)
+			return HttpResponseRedirect('/NCAA/')
+		except MultiValueDictKeyError: pass
+		
 		numGames = int(request.POST['number_of_games'])
 		
 		numGames_list = [i for i in range(1, numGames+1)]
@@ -95,6 +103,8 @@ def bracket(request):
 				winner = classifyCluster(game, True)
 			elif classifier == 'decision_tree':
 				winner = classifyDecisionTree(game)
+			elif classifier == 'naive_bayes':
+				winner = classifyNaiveBayes(game)
 			
 			if winner == 'A':
 				if not teamA:
@@ -210,6 +220,8 @@ def simulate(request):
 			winner = classifyCluster(season, True)
 		elif classifier == 'decision_tree':
 			winner = classifyDecisionTree(season)
+		elif classifier == 'naive_bayes':
+			winner = classifyNaiveBayes(season)
 		print 'WINNER: ' + winner
 		return HttpResponseRedirect('/NCAA/')
 	else: raise Http404()
@@ -229,14 +241,16 @@ def test(classifier='cluster', startYear=2012, endYear=2012):
 						fieldB = getattr(seasonB, field)
 						setattr(season, field, (fieldA - fieldB)/(fieldA + fieldB))
 						#setattr(season, field, fieldA - fieldB)
-					else: setattr(season, field, getattr(seasonA, field) - getattr(seasonB, field))
+					else: setattr(season, field, getattr(seasonB, field) - getattr(seasonA, field))
 				except TypeError: pass
 			if classifier == 'cluster':
 				winner = classifyCluster(season)
 			elif classifier == 'cluster_normalize':
 				winner = classifyCluster(season, True)
 			elif classifier == 'decision_tree':
-				winner = classifyDecisionTree(season)			
+				winner = classifyDecisionTree(season)
+			elif classifier == 'naive_bayes':
+				winner = classifyNaiveBayes(season)				
 			
 			#else:
 			#for field in seasonA._meta.get_all_field_names():
@@ -249,7 +263,7 @@ def test(classifier='cluster', startYear=2012, endYear=2012):
 			#	if winner == 'B': correct += 1
 			#	else: incorrect += 1
 			#else:
-			if winner == 'A': correct += 1
+			if winner == 'B': correct += 1
 			else: incorrect += 1
 			#if winner == 'B': correct[1] += 1
 			#else: incorrect[1] += 1
@@ -446,8 +460,16 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 	else:
 		#print 'B\n'
 		return 'B'
-		
+
+def classifyNaiveBayes(season):
+	nbClassifier = WekaClassifier('nb_trainingOnly.model', 'trainingData.arff')
+	s = []
+	for field in season._meta.get_all_field_names():
+		if field not in skip_fields:
+			s.append(getattr(season, field))
 	
+	return nbClassifier.classify(s)
+
 def classifyDecisionTree(season):
 	if season.wins <= 1:
 		if season.wins <= -7:
