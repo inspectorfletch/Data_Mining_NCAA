@@ -5,4 +5,5 @@ urlpatterns = patterns(
 	'NCAA.views',
 	(r'^NCAA/$', index),
 	(r'^NCAA/simulate/$', bracket),
+	(r'^NCAA/rankings/$', rankings_page),
 )

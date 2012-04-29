@@ -34,12 +34,7 @@
 			
 			#topbar {
 				background-color: #303030;
-				//position: fixed;
-				//position: absolute;
-				//top: 0;
 				position: relative;
-				//float: top;
-				//float: top;
 				top: 0;
 				width: 100%;
 				padding: 10px;
@@ -55,6 +50,35 @@
 				display: inline;
 				margin: 0;
 				padding: 0;
+			}
+			
+			#title {
+				color: white;
+				font-size: xx-large;
+				font-weight: bold;
+				padding: 15px 0px 10px 0px;
+				margin: 0;
+			}
+			
+			a.headerLink {
+				background-color: rgba(100, 100, 130, 0.95);
+				color: white;
+				border: rgb(174, 74, 38) outset 2px;
+				padding: 5px;
+				
+				//font-weight: bold;
+				text-decoration: none;
+				font-family: inherit;
+				font-size: medium;
+			}
+			
+			a.headerLink:hover {
+				background-color: rgba(100, 100, 160, 0.95);
+			}
+			
+			a.headerLink:active {
+				border: rgb(174, 74, 38) inset 2px;
+				color: gray;
 			}
 			
 			table.bracket {
@@ -91,6 +115,33 @@
 			.winner {
 				border-bottom: 1px solid white;
 			}
+			
+			.nationalChamp {
+				font-weight: bold;
+			}
+			
+			p.teamname {
+				padding: 0;
+				margin: 0;
+			}
+			
+			#loadingPopUp {
+				display: none;
+				position: fixed;
+				top: 25%;
+				left: 30%;
+				height: 40%;
+				width: 40%;
+				z-index: 5;
+				background-color: rgba(202,101,0,0.8);
+				border-radius: 5px;
+			}
+			
+			.loadingImage {
+				position: relative;
+				left: 37%;
+				top: 47%;
+			}
 		</style>
 		<script src="http://code.jquery.com/jquery-1.6.4.js" type="text/javascript"></script>
 		<script type="text/javascript">
@@ -121,6 +172,13 @@
 					$(this).find('td').addClass('hasTeams');
 				});
 			});
+			
+			$(document).ready(function(){
+				$('form').submit(function(){
+					$('input:submit').attr("disabled", true);
+					$('#loadingPopUp').show();
+				});
+			});
 			</script>
 			{% block script %}
 			{% endblock %}
@@ -133,5 +191,11 @@
 				{% endblock %}
 			</div>
 			<br class="clear"/>
+			{% block popups %}
+				<div id="loadingPopUp">
+					<image src="/static/loading.gif"
+						   class="loadingImage"/>
+				</div>
+			{% endblock %}
 		</body>
 </html>

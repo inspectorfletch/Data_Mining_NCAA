@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block script %}
+	<script type="text/javascript">
+		var nationalChampions = {2012: 'KENTUCKY',
+								 2011: 'CONNECTICUT',
+								 2010: 'DUKE',
+								 2009: 'N CAROLINA',
+								 2008: 'KANSAS',
+								 2007: 'FLORIDA',
+								 2006: 'FLORIDA',
+								 2005: 'N CAROLINA',
+								 2004: 'CONNECTICUT',
+								 2003: 'SYRACUSE',
+								 2002: 'MARYLAND',
+								 2001: 'DUKE',
+								 2000: 'MICHIGAN ST',
+								 1999: 'CONNECTICUT',
+								 1998: 'KENTUCKY'};
+								 
+		$(document).ready(function(){
+			$('.teamname').each(function(){
+				if ($(this).html() == nationalChampions[{{year}}]) {
+					$(this).addClass('nationalChamp');
+				}
+			});
+		});
+	</script>
+{% endblock %}
+
+{% block body %}
+	<form action="/NCAA/rankings/" method="post">
+		{% csrf_token %}
+		<select id="years" name="year">
+			{% for yearVal in years %}
+				<option value="{{yearVal}}"
+						{% ifequal year yearVal %}
+							selected="true"
+						{% endifequal %}>{{ yearVal }}</option>
+			{% endfor %}
+		</select>
+		<input type="submit" name="rank" value="Rank!"/>
+	</form>
+	<ol>
+	{% for ranking in rankings %}
+		<li>
+			<p class="teamname">{{ ranking.2 }}</p>
+		</li>
+	{% endfor %}
+	</ol>
+{% endblock %}

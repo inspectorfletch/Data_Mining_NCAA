@@ -32,5 +32,13 @@ class WekaClassifier(object):
 				self.instance.setValue(i, float(v))
 		return self.dataset.classAttribute().value(
 			int(self.model.classifyInstance(self.instance)))
+			
+	def rank(self, record):
+		for i, v in enumerate(record):
+			if v is None:
+				self.instance.setMissing(i)
+			else:
+				self.instance.setValue(i, float(v))
+		return self.model.distributionForInstance(self.instance)
 
 #jpype.shutdownJVM() is not called ATM

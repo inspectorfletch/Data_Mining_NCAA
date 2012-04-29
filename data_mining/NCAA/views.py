@@ -19,7 +19,8 @@ skip_fields = ['teamA', 'teamB', 'id', 'teamname', 'year']
 
 def index(request):
 	teams = [team for team in Season.objects.all() if team.wins]
-	numGames_list = [i for i in range(1, 9)]
+	numGames_list = [i for i in range(1, 33)]
+	numGames = 8
 	return render_to_response('bracket.html',
 							  locals(),
 							  context_instance=RequestContext(request))
@@ -35,9 +36,8 @@ def bracket(request):
 		
 		numGames = int(request.POST['number_of_games'])
 		
-		numGames_list = [i for i in range(1, numGames+1)]
+		numGames_list = [i for i in range(1, 33)]
 		selectedTeams = [request.POST['team'+str(i)] for i in range(1, numGames+1)]
-		print selectedTeams
 		
 		teams = []
 		bracketTeams = []
@@ -46,7 +46,6 @@ def bracket(request):
 			teamSet = []
 			
 			teamstats = request.POST['team'+str(i)].split(' ')
-			print 'team'+str(i)
 			#print teamstats
 			teamA = Team()
 			teamA.year = teamstats[0]
@@ -63,7 +62,6 @@ def bracket(request):
 			#bracketTeams.append(str(seasonA.year) + ' ' + str(seasonA.teamname))
 			
 			teamstats = request.POST['team'+str(i+1)].split(' ')
-			print 'team'+str(i+1)
 			#print teamstats
 			teamB = Team()
 			teamB.year = teamstats[0]
@@ -105,6 +103,8 @@ def bracket(request):
 				winner = classifyDecisionTree(game)
 			elif classifier == 'naive_bayes':
 				winner = classifyNaiveBayes(game)
+			elif classifier == 'naive_bayes_ranking':
+				winner = classifyRanking(teamSet[0], teamSet[1])
 			
 			if winner == 'A':
 				if not teamA:
@@ -114,7 +114,6 @@ def bracket(request):
 					teamB = teamSet[0]
 					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
 					t = [teamA, teamB]
-					print t
 					teams.append(t)
 					
 					season = Season(teamname='fun', year='0000')
@@ -138,7 +137,6 @@ def bracket(request):
 					teamB = teamSet[1]
 					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
 					t = [teamA, teamB]
-					print t
 					teams.append(t)
 					
 					season = Season(teamname='fun', year='0000')
@@ -222,10 +220,34 @@ def simulate(request):
 			winner = classifyDecisionTree(season)
 		elif classifier == 'naive_bayes':
 			winner = classifyNaiveBayes(season)
+		elif classifier == 'naive_bayes_ranking':
+			winner = classifyRanking(seasonA, seasonB)
 		print 'WINNER: ' + winner
 		return HttpResponseRedirect('/NCAA/')
 	else: raise Http404()
 
+def rankings_page(request):
+	if request.POST:
+		year = int(request.POST['year'])
+		rankings = []
+		team = []
+		nb = WekaClassifier('models/nb_tournamentResults.model', 'tournament_winners.arff')
+		for season in Season.objects.filter(year=year):
+			if season.wins:
+				for field in season._meta.get_all_field_names():
+					if field not in skip_fields:
+						team.append(getattr(season, field))
+				rankings.append([nb.rank(team)[1], season.year, season.teamname])
+				team = []
+		rankings.sort()
+		rankings.reverse()
+		for ranking in rankings:
+			print ranking
+	years = [num for num in range(1998, 2013)]
+	return render_to_response('rankings.html', 
+							  locals(),
+							  context_instance=RequestContext(request))
+	
 def test(classifier='cluster', startYear=2012, endYear=2012):
 	correct = 0; incorrect = 0
 	for game in Game.objects.all():
@@ -250,7 +272,9 @@ def test(classifier='cluster', startYear=2012, endYear=2012):
 			elif classifier == 'decision_tree':
 				winner = classifyDecisionTree(season)
 			elif classifier == 'naive_bayes':
-				winner = classifyNaiveBayes(season)				
+				winner = classifyNaiveBayes(season)
+			elif classifier == 'naive_bayes_ranking':
+				winner = classifyRanking(seasonA, seasonB)
 			
 			#else:
 			#for field in seasonA._meta.get_all_field_names():
@@ -462,7 +486,7 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 		return 'B'
 
 def classifyNaiveBayes(season):
-	nbClassifier = WekaClassifier('nb_trainingOnly.model', 'trainingData.arff')
+	nbClassifier = WekaClassifier('models/nb_trainingOnly.model', 'trainingData.arff')
 	s = []
 	for field in season._meta.get_all_field_names():
 		if field not in skip_fields:
@@ -470,6 +494,21 @@ def classifyNaiveBayes(season):
 	
 	return nbClassifier.classify(s)
 
+def classifyRanking(teamA, teamB):
+	nb = WekaClassifier('models/nb_tournamentResults.model', 'tournament_winners.arff')
+	teamAStats = []
+	teamBStats = []
+	for field in teamA._meta.get_all_field_names():
+		if field not in skip_fields:
+			teamAStats.append(getattr(teamA, field))
+			teamBStats.append(getattr(teamB, field))
+	percentA = nb.rank(teamAStats)
+	percentB = nb.rank(teamBStats)
+	print percentA, percentB
+	
+	if percentA[1] > percentB[1]: return 'A'
+	else: return 'B'
+	
 def classifyDecisionTree(season):
 	if season.wins <= 1:
 		if season.wins <= -7:
