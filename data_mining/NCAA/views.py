@@ -16,6 +16,40 @@ from classifier import *
 class Team: pass
 
 skip_fields = ['teamA', 'teamB', 'id', 'teamname', 'year']
+strip_fields = ['assists_per_game_allowed',
+				'blocks_per_game_against',
+				'free_throw_percentage',
+				'free_throw_percentage_allowed',
+				'offensive_rebounds_per_game_allowed',
+				'pf_per_game_allowed',
+				'ppg_allowed',
+				'steals_per_game',
+				'turnovers_per_game_against']
+				
+weights =  {"wins"	:	0.09975	,
+			"losses"	:	0.08696	,
+			"ppg"	:	0.07057	,
+			"field_goal_percentage"	:	0.05187	,
+			"assists_per_game"	:	0.03536	,
+			"rebounds_per_game"	:	0.03227	,
+			"field_goal_percentage_allowed"	:	0.02785	,
+			"blocks_per_game"	:	0.02712	,
+			"offensive_rebounds_per_game"	:	0.02621	,
+			"turnovers_per_game"	:	0.01999	,
+			"pf_per_game"	:	0.01806	,
+			"three_point_percentage_allowed"	:	0.01702	,
+			"three_point_percentage"	:	0.00494	,
+			"steals_per_game_allowed"	:	0.00474	,
+			"rebounds_per_game_allowed"	:	0.00453	,
+			"assists_per_game_allowed"	:	0	,
+			"blocks_per_game_against"	:	0	,
+			"free_throw_percentage"	:	0	,
+			"free_throw_percentage_allowed"	:	0	,
+			"offensive_rebounds_per_game_allowed"	:	0	,
+			"pf_per_game_allowed"	:	0	,
+			"ppg_allowed"	:	0	,
+			"steals_per_game"	:	0	,
+			"turnovers_per_game_against"	:	0}
 
 def index(request):
 	teams = [team for team in Season.objects.all() if team.wins]
@@ -91,28 +125,48 @@ def bracket(request):
 			teams.append(teamSet)
 		
 		teamA = None; teamB = None
+		tail = None
 		while len(games) > 0:
 			game = games.pop(0)
 			teamSet = teams.pop(0)
 			
 			if classifier == 'cluster':
-				winner = classifyCluster(game)
-			elif classifier == 'cluster_normalize':
-				winner = classifyCluster(game, True)
+				(tail, winner) = classifyCluster(game)
+			elif classifier == '3-cluster':
+				(tail, winner) = classifyCluster(game, False, 3)
+			elif classifier == '4-cluster':
+				(tail, winner) = classifyCluster(game, False, 4)
+			elif classifier == 'cluster_weighted':
+				(_, winner) = classifyCluster(game, True)
+			elif classifier == '3-cluster_weighted':
+				(_, winner) = classifyCluster(game, True, 3)
+			elif classifier == '4-cluster_weighted':
+				(_, winner) = classifyCluster(game, True, 4)
 			elif classifier == 'decision_tree':
 				winner = classifyDecisionTree(game)
 			elif classifier == 'naive_bayes':
-				winner = classifyNaiveBayes(game)
+				(tail, winner) = classifyNaiveBayes(game)
+			elif classifier == 'naive_bayes_stripped':
+				(tail, winner) = classifyNaiveBayesStripped(game)
 			elif classifier == 'naive_bayes_ranking':
-				winner = classifyRanking(teamSet[0], teamSet[1])
+				(tail, winner) = classifyRanking(teamSet[0], teamSet[1])
+			elif classifier == 'naive_bayes_ranking_stripped':
+				(tail, winner) = classifyRankingStripped(teamSet[0], teamSet[1])
 			
 			if winner == 'A':
 				if not teamA:
 					teamA = teamSet[0]
-					bracketTeams.append(str(teamA.year) + ' ' + str(teamA.teamname))
+					
+					addString = str(teamA.year) + ' ' + str(teamA.teamname)
+					if tail is not None: addString += ' (' + str(tail) + ')'
+					bracketTeams.append(addString)
 				else:
 					teamB = teamSet[0]
-					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
+					
+					addString = str(teamB.year) + ' ' + str(teamB.teamname)
+					if tail is not None: addString += ' (' + str(tail) + ')'
+					bracketTeams.append(addString)
+					
 					t = [teamA, teamB]
 					teams.append(t)
 					
@@ -132,10 +186,17 @@ def bracket(request):
 			else:
 				if not teamA:
 					teamA = teamSet[1]
-					bracketTeams.append(str(teamA.year) + ' ' + str(teamA.teamname))
+					
+					addString = str(teamA.year) + ' ' + str(teamA.teamname)
+					if tail is not None: addString += ' (' + str(tail) + ')'
+					bracketTeams.append(addString)
 				else:
 					teamB = teamSet[1]
-					bracketTeams.append(str(teamB.year) + ' ' + str(teamB.teamname))
+					
+					addString = str(teamB.year) + ' ' + str(teamB.teamname)
+					if tail is not None: addString += ' (' + str(tail) + ')'
+					bracketTeams.append(addString)
+					
 					t = [teamA, teamB]
 					teams.append(t)
 					
@@ -151,7 +212,7 @@ def bracket(request):
 					
 					teamA = None; teamB = None
 					games.append(season)
-					#print season
+			tail = None
 		#games = [['Berks', 'Ohio State', 'Shit', 'Shit State'], ['Shit A&M', 'Terra Tech'], ['Kate']]
 		games = []
 		while numGames > 0:
@@ -213,15 +274,27 @@ def simulate(request):
 		print season
 		
 		if classifier == 'cluster':
-			winner = classifyCluster(season)
-		elif classifier == 'cluster_normalize':
-			winner = classifyCluster(season, True)
+			(_, winner) = classifyCluster(season)
+		elif classifier == '3-cluster':
+			(_, winner) = classifyCluster(season, False, 3)
+		elif classifier == '4-cluster':
+			(_, winner) = classifyCluster(season, False, 4)
+		elif classifier == 'cluster_weighted':
+			(_, winner) = classifyCluster(season, True)
+		elif classifier == '3-cluster_weighted':
+			(_, winner) = classifyCluster(season, True, 3)
+		elif classifier == '4-cluster_weighted':
+			(_, winner) = classifyCluster(season, True, 4)
 		elif classifier == 'decision_tree':
 			winner = classifyDecisionTree(season)
 		elif classifier == 'naive_bayes':
-			winner = classifyNaiveBayes(season)
+			(_, winner) = classifyNaiveBayes(season)
+		elif classifier == 'naive_bayes_stripped':
+				(tail, winner) = classifyNaiveBayesStripped(season)
 		elif classifier == 'naive_bayes_ranking':
-			winner = classifyRanking(seasonA, seasonB)
+			(_, winner) = classifyRanking(seasonA, seasonB)
+		elif classifier == 'naive_bayes_ranking_stripped':
+			(tail, winner) = classifyRankingStripped(seasonA, seasonB)
 		print 'WINNER: ' + winner
 		return HttpResponseRedirect('/NCAA/')
 	else: raise Http404()
@@ -229,21 +302,26 @@ def simulate(request):
 def rankings_page(request):
 	if request.POST:
 		year = int(request.POST['year'])
+		ranker = request.POST['ranker']
 		rankings = []
 		team = []
-		nb = WekaClassifier('models/nb_tournamentResults.model', 'tournament_winners.arff')
+		if ranker == 'simple': nb = WekaClassifier('models/nb_tournamentResults.model', 'tournament_winners.arff')
+		elif ranker == 'stripped':
+			nb = WekaClassifier('models/nb_tournamentResultsStripped.model', 'stripped_data/tournament_winnersStripped.arff')
 		for season in Season.objects.filter(year=year):
 			if season.wins:
 				for field in season._meta.get_all_field_names():
 					if field not in skip_fields:
-						team.append(getattr(season, field))
+						if ranker == 'simple' or field not in strip_fields: team.append(getattr(season, field))
 				rankings.append([nb.rank(team)[1], season.year, season.teamname])
 				team = []
 		rankings.sort()
 		rankings.reverse()
-		for ranking in rankings:
-			print ranking
-	years = [num for num in range(1998, 2013)]
+		#for ranking in rankings:
+		#	print ranking
+	years = []
+	for season in Season.objects.all():
+		if season.year not in years: years.append(season.year)
 	return render_to_response('rankings.html', 
 							  locals(),
 							  context_instance=RequestContext(request))
@@ -266,15 +344,27 @@ def test(classifier='cluster', startYear=2012, endYear=2012):
 					else: setattr(season, field, getattr(seasonB, field) - getattr(seasonA, field))
 				except TypeError: pass
 			if classifier == 'cluster':
-				winner = classifyCluster(season)
-			elif classifier == 'cluster_normalize':
-				winner = classifyCluster(season, True)
+				(_, winner) = classifyCluster(season)
+			elif classifier == '3-cluster':
+				(_, winner) = classifyCluster(season, False, 3)
+			elif classifier == '4-cluster':
+				(_, winner) = classifyCluster(season, False, 4)
+			elif classifier == 'cluster_weighted':
+				(_, winner) = classifyCluster(season, True)
+			elif classifier == '3-cluster_weighted':
+				(_, winner) = classifyCluster(season, True, 3)
+			elif classifier == '4-cluster_weighted':
+				(_, winner) = classifyCluster(season, True, 4)
 			elif classifier == 'decision_tree':
 				winner = classifyDecisionTree(season)
 			elif classifier == 'naive_bayes':
-				winner = classifyNaiveBayes(season)
+				(_, winner) = classifyNaiveBayes(season)
+			elif classifier == 'naive_bayes_stripped':
+				(tail, winner) = classifyNaiveBayesStripped(season)
 			elif classifier == 'naive_bayes_ranking':
-				winner = classifyRanking(seasonA, seasonB)
+				(_, winner) = classifyRanking(seasonA, seasonB)
+			elif classifier == 'naive_bayes_ranking_stripped':
+				(tail, winner) = classifyRankingStripped(seasonA, seasonB)
 			
 			#else:
 			#for field in seasonA._meta.get_all_field_names():
@@ -297,9 +387,10 @@ def test(classifier='cluster', startYear=2012, endYear=2012):
 	print "correct: " + str(correct)# + ' ' + str(correct[1])
 	print "incorrect: " + str(incorrect)# + ' ' + str(incorrect[1])
 
-def classifyCluster(season, normalize=False, num_clusters=2):
+def classifyCluster(season, weight=False, num_clusters=2):
 	clusters = []
-	if not normalize:
+	#if not normalize:
+	if num_clusters == 2:
 		clusters.append(Season(teamname="cluster1", year="0001",
 						  assists_per_game=1.1914,
 						  assists_per_game_allowed=0.6377,
@@ -332,6 +423,184 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 						  field_goal_percentage_allowed=	-0.5511,						  free_throw_percentage=	1.4052,
 						  free_throw_percentage_allowed=	0.6211,						  losses=	-1.5955,
 						  offensive_rebounds_per_game=	-0.7314,						  offensive_rebounds_per_game_allowed=	-0.9782,						  pf_per_game=	-1.1964,						  pf_per_game_allowed=	-0.6286,						  ppg=	-1.5173,						  ppg_allowed=	-3.8555,						  rebounds_per_game=	-1.1434,						  rebounds_per_game_allowed=	-2.2555,						  steals_per_game=	-0.8982,						  steals_per_game_allowed=	-0.7543,						  three_point_percentage=	0.9016,						  three_point_percentage_allowed=	-0.4755,						  turnovers_per_game=	-1.3825,						  turnovers_per_game_against=	-1.3948,						  wins=	1.8523))
+	elif num_clusters == 3:
+		clusters.append(Season(teamname="cluster1", year="0001",
+						assists_per_game	=	0.5571	,
+						assists_per_game_allowed	=	0.8971	,
+						blocks_per_game	=	0.8206	,
+						blocks_per_game_against	=	0.5716	,
+						field_goal_percentage	=	-0.4439	,
+						field_goal_percentage_allowed	=	0.0761	,
+						free_throw_percentage	=	-0.7271	,
+						free_throw_percentage_allowed	=	-0.7906	,
+						losses	=	0.1774	,
+						offensive_rebounds_per_game	=	1.6642	,
+						offensive_rebounds_per_game_allowed	=	1.1781	,
+						pf_per_game	=	0.8797	,
+						pf_per_game_allowed	=	0.8542	,
+						ppg	=	4.5032	,
+						ppg_allowed	=	3.5942	,
+						rebounds_per_game	=	2.3065	,
+						rebounds_per_game_allowed	=	2.3687	,
+						steals_per_game	=	1.2142	,
+						steals_per_game_allowed	=	0.3974	,
+						three_point_percentage	=	-0.9126	,
+						three_point_percentage_allowed	=	-0.0348	,
+						turnovers_per_game	=	0.63	,
+						turnovers_per_game_against	=	1.6348	,
+						wins	=	0.0097))
+		clusters.append(Season(teamname="cluster2", year="0002",
+						assists_per_game	=	-0.6822	,
+						assists_per_game_allowed	=	-0.8997	,
+						blocks_per_game	=	-0.71	,
+						blocks_per_game_against	=	-0.2315	,
+						field_goal_percentage	=	-0.0969	,
+						field_goal_percentage_allowed	=	-0.033	,
+						free_throw_percentage	=	1.5037	,
+						free_throw_percentage_allowed	=	0.5956	,
+						losses	=	-0.2399	,
+						offensive_rebounds_per_game	=	-1.1564	,
+						offensive_rebounds_per_game_allowed	=	-1.153	,
+						pf_per_game	=	-0.9511	,
+						pf_per_game_allowed	=	-0.8202	,
+						ppg	=	-3.7321	,
+						ppg_allowed	=	-3.8798	,
+						rebounds_per_game	=	-2.1427	,
+						rebounds_per_game_allowed	=	-2.0944	,
+						steals_per_game	=	-1.0548	,
+						steals_per_game_allowed	=	-0.8153	,
+						three_point_percentage	=	0.3944	,
+						three_point_percentage_allowed	=	-0.1206	,
+						turnovers_per_game	=	-1.4782	,
+						turnovers_per_game_against	=	-1.5143	,
+						wins	=	0.2991))
+		clusters.append(Season(teamname="cluster3", year="0003",
+						assists_per_game	=	2.2956	,
+						assists_per_game_allowed	=	-0.3707	,
+						blocks_per_game	=	1.2578	,
+						blocks_per_game_against	=	-0.2402	,
+						field_goal_percentage	=	3.4912	,
+						field_goal_percentage_allowed	=	-2.1948	,
+						free_throw_percentage	=	0.653	,
+						free_throw_percentage_allowed	=	-0.1253	,
+						losses	=	-5.2048	,
+						offensive_rebounds_per_game	=	1.0233	,
+						offensive_rebounds_per_game_allowed	=	0.3639	,
+						pf_per_game	=	-1.29	,
+						pf_per_game_allowed	=	0.3349	,
+						ppg	=	7.2325	,
+						ppg_allowed	=	-1.4064	,
+						rebounds_per_game	=	3.0863	,
+						rebounds_per_game_allowed	=	-1.2695	,
+						steals_per_game	=	0.1767	,
+						steals_per_game_allowed	=	0.0341	,
+						three_point_percentage	=	2.3056	,
+						three_point_percentage_allowed	=	-1.3751	,
+						turnovers_per_game	=	-0.2478	,
+						turnovers_per_game_against	=	-0.3277	,
+						wins	=	5.9036))
+	elif num_clusters == 4:
+		clusters.append(Season(teamname="cluster1", year="0001",
+						assists_per_game	=	-0.0004	,
+						assists_per_game_allowed	=	-0.0431	,
+						blocks_per_game	=	1.3224	,
+						blocks_per_game_against	=	0.4461	,
+						field_goal_percentage	=	-0.9284	,
+						field_goal_percentage_allowed	=	-1.8009	,
+						free_throw_percentage	=	-2.5578	,
+						free_throw_percentage_allowed	=	-1.3513	,
+						losses	=	-0.694	,
+						offensive_rebounds_per_game	=	1.9078	,
+						offensive_rebounds_per_game_allowed	=	1.0319	,
+						pf_per_game	=	0.4168	,
+						pf_per_game_allowed	=	0.5806	,
+						ppg	=	1.9573	,
+						ppg_allowed	=	-0.1828	,
+						rebounds_per_game	=	3.1573	,
+						rebounds_per_game_allowed	=	1.9103	,
+						steals_per_game	=	0.8246	,
+						steals_per_game_allowed	=	0.1539	,
+						three_point_percentage	=	-1.856	,
+						three_point_percentage_allowed	=	-1.6496	,
+						turnovers_per_game	=	0.3944	,
+						turnovers_per_game_against	=	0.9841	,
+						wins	=	0.9914))
+		clusters.append(Season(teamname="cluster2", year="0002",
+						assists_per_game	=	-0.8936	,
+						assists_per_game_allowed	=	-0.2609	,
+						blocks_per_game	=	-1.0694	,
+						blocks_per_game_against	=	-0.0396	,
+						field_goal_percentage	=	-0.4753	,
+						field_goal_percentage_allowed	=	1.1996	,
+						free_throw_percentage	=	2.3438	,
+						free_throw_percentage_allowed	=	0.7285	,
+						losses	=	1.3106	,
+						offensive_rebounds_per_game	=	-1.4183	,
+						offensive_rebounds_per_game_allowed	=	-0.9306	,
+						pf_per_game	=	-0.5974	,
+						pf_per_game_allowed	=	-0.723	,
+						ppg	=	-3.3979	,
+						ppg_allowed	=	-1.6055	,
+						rebounds_per_game	=	-2.9732	,
+						rebounds_per_game_allowed	=	-1.3613	,
+						steals_per_game	=	-0.9157	,
+						steals_per_game_allowed	=	-0.7421	,
+						three_point_percentage	=	0.503	,
+						three_point_percentage_allowed	=	0.7247	,
+						turnovers_per_game	=	-1.3523	,
+						turnovers_per_game_against	=	-1.157	,
+						wins	=	-1.4043))
+		clusters.append(Season(teamname="cluster3", year="0003",
+						assists_per_game	=	2.3915	,
+						assists_per_game_allowed	=	1.2261	,
+						blocks_per_game	=	0.7854	,
+						blocks_per_game_against	=	0.3487	,
+						field_goal_percentage	=	2.5457	,
+						field_goal_percentage_allowed	=	0.6688	,
+						free_throw_percentage	=	1.7372	,
+						free_throw_percentage_allowed	=	-0.1075	,
+						losses	=	-2.5226	,
+						offensive_rebounds_per_game	=	1.5075	,
+						offensive_rebounds_per_game_allowed	=	1.198	,
+						pf_per_game	=	0.406	,
+						pf_per_game_allowed	=	1.3015	,
+						ppg	=	10.5739	,
+						ppg_allowed	=	5.7286	,
+						rebounds_per_game	=	2.8457	,
+						rebounds_per_game_allowed	=	1.2221	,
+						steals_per_game	=	1.3181	,
+						steals_per_game_allowed	=	0.7492	,
+						three_point_percentage	=	1.8452	,
+						three_point_percentage_allowed	=	0.5714	,
+						turnovers_per_game	=	0.8352	,
+						turnovers_per_game_against	=	1.5925	,
+						wins	=	2.799))
+		clusters.append(Season(teamname="cluster4", year="0004",
+						assists_per_game	=	1.2126	,
+						assists_per_game_allowed	=	-1.2883	,
+						blocks_per_game	=	0.5977	,
+						blocks_per_game_against	=	-0.5631	,
+						field_goal_percentage	=	2.435	,
+						field_goal_percentage_allowed	=	-2.4799	,
+						free_throw_percentage	=	0.5458	,
+						free_throw_percentage_allowed	=	0.3673	,
+						losses	=	-4.5	,
+						offensive_rebounds_per_game	=	-0.0458	,
+						offensive_rebounds_per_game_allowed	=	-0.8103	,
+						pf_per_game	=	-1.8266	,
+						pf_per_game_allowed	=	-0.6491	,
+						ppg	=	1.1173	,
+						ppg_allowed	=	-5.6154	,
+						rebounds_per_game	=	0.914	,
+						rebounds_per_game_allowed	=	-2.9	,
+						steals_per_game	=	-0.7318	,
+						steals_per_game_allowed	=	-0.6561	,
+						three_point_percentage	=	1.6963	,
+						three_point_percentage_allowed	=	-1.3701	,
+						turnovers_per_game	=	-1.3121	,
+						turnovers_per_game_against	=	-1.5617	,
+						wins	=	5.1963))
+	"""
 	else:
 		clusters.append(Season(teamname="cluster1", year="0001",
 						  assists_per_game	=	0.1357	,
@@ -383,6 +652,7 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 						  turnovers_per_game	=	-0.2043	,
 						  turnovers_per_game_against	=	-0.1755	,
 						  wins	=	0.0853))
+	"""
 	
 	distances = []
 	# Get distance from instance to each cluster
@@ -394,7 +664,8 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 				val2 = getattr(cluster, field)
 				
 				#distance += math.pow((val1 - val2)/(val1 + val2), 2)
-				distance += math.pow(val1 - val2, 2)
+				if not weight: distance += math.pow(val1 - val2, 2)
+				else: distance += weights[field] * math.pow(val1 - val2, 2)
 		distances.append(math.sqrt(distance))
 	
 	# Flip the instance around (switch teamA and teamB)
@@ -411,7 +682,8 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 				val2 = getattr(cluster, field)
 				
 				#distance += math.pow((val1 - val2)/(val1 + val2), 2)
-				distance += math.pow(val1 - val2, 2)
+				if not weight: distance += math.pow(val1 - val2, 2)
+				else: distance += weights[field] * math.pow(val1 - val2, 2)
 		distances.append(math.sqrt(distance))
 	
 	"""distanceACluster1 = 0
@@ -480,10 +752,10 @@ def classifyCluster(season, normalize=False, num_clusters=2):
 	
 	if minCluster < len(clusters): 
 		#print 'A\n'
-		return 'A'
+		return (minCluster, 'A')
 	else:
 		#print 'B\n'
-		return 'B'
+		return (minCluster-num_clusters, 'B')
 
 def classifyNaiveBayes(season):
 	nbClassifier = WekaClassifier('models/nb_trainingOnly.model', 'trainingData.arff')
@@ -491,8 +763,21 @@ def classifyNaiveBayes(season):
 	for field in season._meta.get_all_field_names():
 		if field not in skip_fields:
 			s.append(getattr(season, field))
-	
-	return nbClassifier.classify(s)
+	percentage = nbClassifier.rank(s)
+	if percentage[0] > percentage[1]:
+		return ("%.2f" % percentage[0], 'B')
+	else: return ("%.2f" % percentage[1], 'A')
+
+def classifyNaiveBayesStripped(season):
+	nbClassifier = WekaClassifier('models/nb_stripped.model', 'stripped_data/stripped_dataBayes.arff')
+	s = []
+	for field in season._meta.get_all_field_names():
+		if field not in skip_fields and field not in strip_fields:
+			s.append(getattr(season, field))
+	percentage = nbClassifier.rank(s)
+	if percentage[0] > percentage[1]:
+		return ("%.2f" % percentage[0], 'B')
+	else: return ("%.2f" % percentage[1], 'A')
 
 def classifyRanking(teamA, teamB):
 	nb = WekaClassifier('models/nb_tournamentResults.model', 'tournament_winners.arff')
@@ -504,10 +789,25 @@ def classifyRanking(teamA, teamB):
 			teamBStats.append(getattr(teamB, field))
 	percentA = nb.rank(teamAStats)
 	percentB = nb.rank(teamBStats)
-	print percentA, percentB
+	#print percentA, percentB
 	
-	if percentA[1] > percentB[1]: return 'A'
-	else: return 'B'
+	if percentA[1] > percentB[1]: return ('%.2f-%.2f' % (percentA[1], percentB[1]), 'A')
+	else: return ('%.2f-%.2f' % (percentB[1], percentA[1]), 'B')
+
+def classifyRankingStripped(teamA, teamB):
+	nb = WekaClassifier('models/nb_tournamentResultsStripped.model', 'stripped_data/tournament_winnersStripped.arff')
+	teamAStats = []
+	teamBStats = []
+	for field in teamA._meta.get_all_field_names():
+		if field not in skip_fields and field not in strip_fields:
+			teamAStats.append(getattr(teamA, field))
+			teamBStats.append(getattr(teamB, field))
+	percentA = nb.rank(teamAStats)
+	percentB = nb.rank(teamBStats)
+	#print percentA, percentB
+	
+	if percentA[1] > percentB[1]: return ('%.2f-%.2f' % (percentA[1], percentB[1]), 'A')
+	else: return ('%.2f-%.2f' % (percentB[1], percentA[1]), 'B')
 	
 def classifyDecisionTree(season):
 	if season.wins <= 1:

@@ -2,6 +2,89 @@
 
 {% block script %}
 	<script type="text/javascript">
+		var presetList = new Array();
+		presetList["2"] = new Array();
+		presetList["4"] = new Array();
+		presetList["8"] = new Array();
+		presetList["16"] = new Array();
+		presetList["32"] = new Array();
+		presetList["2"]["2012"] = ["2012 KENTUCKY","2012 KANSAS"];
+		presetList["4"]["2012"] = ["2012 KENTUCKY","2012 LOUISVILLE","2012 OHIO ST","2012 KANSAS"];
+		presetList["8"]["2012"] = ["2012 KENTUCKY","2012 BAYLOR","2012 LOUISVILLE","2012 FLORIDA","2012 SYRACUSE","2012 OHIO ST","2012 N CAROLINA","2012 KANSAS"];
+		presetList["16"]["2012"] = ["2012 KENTUCKY","2012 INDIANA","2012 BAYLOR","2012 XAVIER","2012 MICHIGAN ST","2012 LOUISVILLE","2012 MARQUETTE","2012 FLORIDA","2012 SYRACUSE","2012 WISCONSIN","2012 CINCINNATI","2012 OHIO ST","2012 N CAROLINA","2012 OHIO U","2012 NC STATE","2012 KANSAS"];
+				
+		presetList["2"]["2011"] = ["2011 CONNECTICUT","2011 BUTLER"];
+		presetList["4"]["2011"] = ["2011 KENTUCKY","2011 CONNECTICUT","2011 VA COMMONWEALTH","2011 BUTLER"];
+		presetList["8"]["2011"] = ["2011 KENTUCKY","2011 N CAROLINA","2011 ARIZONA","2011 CONNECTICUT","2011 KANSAS","2011 VA COMMONWEALTH","2011 BUTLER","2011 FLORIDA"];
+		presetList["16"]["2011"] = ["2011 OHIO ST","2011 KENTUCKY","2011 MARQUETTE","2011 N CAROLINA","2011 DUKE","2011 ARIZONA","2011 CONNECTICUT","2011 SAN DIEGO ST","2011 KANSAS","2011 RICHMOND","2011 VA COMMONWEALTH","2011 FLORIDA ST","2011 BUTLER","2011 WISCONSIN","2011 BYU","2011 FLORIDA"];
+		
+		presetList["2"]["2010"] = ["2010 BUTLER","2010 DUKE"];
+		presetList["4"]["2010"] = ["2010 MICHIGAN ST","2010 BUTLER","2010 W VIRGINIA","2010 DUKE"];
+		presetList["8"]["2010"] = ["2010 MICHIGAN ST","2010 TENNESSEE","2010 BUTLER","2010 KANSAS ST","2010 KENTUCKY","2010 W VIRGINIA","2010 DUKE","2010 BAYLOR"];
+		presetList["16"]["2010"] = ["2010 N IOWA","2010 MICHIGAN ST","2010 TENNESSEE","2010 OHIO ST","2010 SYRACUSE","2010 BUTLER","2010 XAVIER","2010 KANSAS ST","2010 KENTUCKY","2010 CORNELL","2010 WASHINGTON","2010 W VIRGINIA","2010 DUKE","2010 PURDUE","2010 BAYLOR","2010 ST MARYS-CA"];
+		
+		presetList["2"]["2009"] = ["2009 MICHIGAN ST","2009 N CAROLINA"];
+		presetList["4"]["2009"] = ["2009 MICHIGAN ST","2009 CONNECTICUT","2009 VILLANOVA","2009 N CAROLINA"];
+		presetList["8"]["2009"] = ["2009 LOUISVILLE","2009 MICHIGAN ST","2009 CONNECTICUT","2009 MISSOURI","2009 PITTSBURGH","2009 VILLANOVA","2009 N CAROLINA","2009 OKLAHOMA"];
+		presetList["16"]["2009"] = ["2009 LOUISVILLE","2009 ARIZONA","2009 KANSAS","2009 MICHIGAN ST","2009 CONNECTICUT","2009 PURDUE","2009 MISSOURI","2009 MEMPHIS","2009 PITTSBURGH","2009 XAVIER","2009 VILLANOVA","2009 DUKE","2009 N CAROLINA","2009 GONZAGA","2009 SYRACUSE","2009 OKLAHOMA"];
+	
+		presetList["2"]["2008"] = ["2008 KANSAS","2008 MEMPHIS"];
+		presetList["4"]["2008"] = ["2008 N CAROLINA","2008 KANSAS","2008 MEMPHIS","2008 UCLA"];
+		presetList["8"]["2008"] = ["2008 N CAROLINA","2008 LOUISVILLE","2008 KANSAS","2008 DAVIDSON","2008 MEMPHIS","2008 TEXAS","2008 UCLA","2008 XAVIER"];
+		presetList["16"]["2008"] = ["2008 N CAROLINA","2008 WASHINGTON ST","2008 LOUISVILLE","2008 TENNESSEE","2008 KANSAS","2008 VILLANOVA","2008 WISCONSIN","2008 DAVIDSON","2008 MEMPHIS","2008 MICHIGAN ST","2008 STANFORD","2008 TEXAS","2008 UCLA","2008 W KENTUCKY","2008 XAVIER","2008 W VIRGINIA"];
+		
+		presetList["2"]["2007"] = ["2007 FLORIDA","2007 OHIO ST"];
+		presetList["4"]["2007"] = ["2007 FLORIDA","2007 UCLA","2007 GEORGETOWN","2007 OHIO ST"];
+		presetList["8"]["2007"] = ["2007 FLORIDA","2007 OREGON","2007 KANSAS","2007 UCLA","2007 N CAROLINA","2007 GEORGETOWN","2007 OHIO ST","2007 MEMPHIS"];
+		presetList["16"]["2007"] = ["2007 FLORIDA","2007 BUTLER","2007 OREGON","2007 UNLV","2007 KANSAS","2007 S ILLINOIS","2007 PITTSBURGH","2007 UCLA","2007 N CAROLINA","2007 USC","2007 VANDERBILT","2007 GEORGETOWN","2007 OHIO ST","2007 TENNESSEE","2007 TEXAS A","2007 MEMPHIS"];
+
+		presetList["2"]["2006"] = ["2006 UCLA","2006 FLORIDA"];
+		presetList["4"]["2006"] = ["2006 LSU","2006 UCLA","2006 FLORIDA","2006 GEORGE MASON"];
+		presetList["8"]["2006"] = ["2006 LSU","2006 TEXAS","2006 MEMPHIS","2006 UCLA","2006 VILLANOVA","2006 FLORIDA","2006 CONNECTICUT","2006 GEORGE MASON"];
+		presetList["16"]["2006"] = ["2006 DUKE","2006 LSU","2006 W VIRGINIA","2006 TEXAS","2006 MEMPHIS","2006 BRADLEY","2006 GONZAGA","2006 UCLA","2006 VILLANOVA","2006 BOSTON COLLEGE","2006 FLORIDA","2006 GEORGETOWN","2006 CONNECTICUT","2006 WASHINGTON","2006 GEORGE MASON","2006 WICHITA ST"];
+
+		presetList["2"]["2005"] = ["2005 ILLINOIS","2005 N CAROLINA"];
+		presetList["4"]["2005"] = ["2005 ILLINOIS","2005 LOUISVILLE","2005 N CAROLINA","2005 MICHIGAN ST"];
+		presetList["8"]["2005"] = ["2005 ILLINOIS","2005 ARIZONA","2005 LOUISVILLE","2005 W VIRGINIA","2005 N CAROLINA","2005 WISCONSIN","2005 MICHIGAN ST","2005 KENTUCKY"];
+		presetList["16"]["2005"] = ["2005 ILLINOIS","2005 WI-MILWAUKEE","2005 ARIZONA","2005 OKLAHOMA ST","2005 WASHINGTON","2005 LOUISVILLE","2005 TEXAS TECH","2005 W VIRGINIA","2005 N CAROLINA","2005 VILLANOVA","2005 WISCONSIN","2005 NC STATE","2005 DUKE","2005 MICHIGAN ST","2005 UTAH","2005 KENTUCKY"];
+		
+		presetList["2"]["2004"] = ["2004 CONNECTICUT","2004 GEORGIA TECH"];
+		presetList["4"]["2004"] = ["2004 OKLAHOMA ST","2004 GEORGIA TECH","2004 DUKE","2004 CONNECTICUT"];
+		presetList["8"]["2004"] = ["2004 ST JOSEPHS","2004 OKLAHOMA ST","2004 KANSAS","2004 GEORGIA TECH","2004 DUKE","2004 XAVIER","2004 ALABAMA","2004 CONNECTICUT"];
+		presetList["16"]["2004"] = ["2004 ST JOSEPHS","2004 WAKE FOREST","2004 PITTSBURGH","2004 OKLAHOMA ST","2004 UAB","2004 KANSAS","2004 GEORGIA TECH","2004 NEVADA","2004 DUKE","2004 ILLINOIS","2004 TEXAS","2004 XAVIER","2004 ALABAMA","2004 SYRACUSE","2004 VANDERBILT","2004 CONNECTICUT"];
+		
+		presetList["2"]["2003"] = ["2003 SYRACUSE","2003 KANSAS"];
+		presetList["4"]["2003"] = ["2003 SYRACUSE","2003 TEXAS","2003 MARQUETTE","2003 KANSAS"];
+		presetList["8"]["2003"] = ["2003 OKLAHOMA","2003 SYRACUSE","2003 TEXAS","2003 MICHIGAN ST","2003 KENTUCKY","2003 MARQUETTE","2003 ARIZONA","2003 KANSAS"];
+		presetList["16"]["2003"] = ["2003 OKLAHOMA","2003 BUTLER","2003 SYRACUSE","2003 AUBURN","2003 TEXAS","2003 CONNECTICUT","2003 MARYLAND","2003 MICHIGAN ST","2003 KENTUCKY","2003 WISCONSIN","2003 MARQUETTE","2003 PITTSBURGH","2003 ARIZONA","2003 NOTRE DAME","2003 DUKE","2003 KANSAS"];
+		
+		presetList["2"]["2002"] = ["2002 MARYLAND","2002 INDIANA"];
+		presetList["4"]["2002"] = ["2002 MARYLAND","2002 KANSAS","2002 INDIANA","2002 OKLAHOMA"];
+		presetList["8"]["2002"] = ["2002 MARYLAND","2002 CONNECTICUT","2002 KANSAS","2002 OREGON","2002 INDIANA","2002 KENT ST","2002 MISSOURI","2002 OKLAHOMA"];
+		presetList["16"]["2002"] = ["2002 MARYLAND","2002 KENTUCKY","2002 S ILLINOIS","2002 CONNECTICUT","2002 KANSAS","2002 ILLINOIS","2002 TEXAS","2002 OREGON","2002 DUKE","2002 INDIANA","2002 PITTSBURGH","2002 KENT ST","2002 UCLA","2002 MISSOURI","2002 ARIZONA","2002 OKLAHOMA"];
+				
+		presetList["2"]["2001"] = ["2001 DUKE","2001 ARIZONA"];
+		presetList["4"]["2001"] = ["2001 DUKE","2001 MARYLAND","2001 MICHIGAN ST","2001 ARIZONA"];
+		presetList["8"]["2001"] = ["2001 DUKE","2001 USC","2001 STANFORD","2001 MARYLAND","2001 MICHIGAN ST","2001 TEMPLE","2001 ILLINOIS","2001 ARIZONA"];
+		presetList["16"]["2001"] = ["2001 DUKE","2001 UCLA","2001 USC","2001 KENTUCKY","2001 STANFORD","2001 CINCINNATI","2001 MARYLAND","2001 GEORGETOWN","2001 MICHIGAN ST","2001 GONZAGA","2001 TEMPLE","2001 PENN ST","2001 ILLINOIS","2001 KANSAS","2001 OLE MISS","2001 ARIZONA"];		
+		
+		presetList["2"]["2000"] = ["2000 MICHIGAN ST","2000 FLORIDA"];
+		presetList["4"]["2000"] = ["2000 FLORIDA","2000 N CAROLINA","2000 MICHIGAN ST","2000 WISCONSIN"];
+		presetList["8"]["2000"] = ["2000 FLORIDA","2000 OKLAHOMA ST","2000 N CAROLINA","2000 TULSA","2000 MICHIGAN ST","2000 IOWA ST","2000 WISCONSIN","2000 PURDUE"];
+		presetList["16"]["2000"] = ["2000 DUKE","2000 FLORIDA","2000 OKLAHOMA ST","2000 SETON HALL","2000 N CAROLINA","2000 TENNESSEE","2000 MIAMI","2000 TULSA","2000 MICHIGAN ST","2000 SYRACUSE","2000 UCLA","2000 IOWA ST","2000 WISCONSIN","2000 LSU","2000 PURDUE","2000 GONZAGA"];
+		
+		presetList["2"]["1999"] = ["1999 DUKE","1999 CONNECTICUT"];
+		presetList["4"]["1999"] = ["1999 DUKE","1999 MICHIGAN ST","1999 OHIO ST","1999 CONNECTICUT"];
+		presetList["8"]["1999"] = ["1999 DUKE","1999 TEMPLE","1999 MICHIGAN ST","1999 KENTUCKY","1999 OHIO ST","1999 ST JOHNS","1999 CONNECTICUT","1999 GONZAGA"];
+		presetList["16"]["1999"] = ["1999 DUKE","1999 SW MISSOURI ST","1999 TEMPLE","1999 PURDUE","1999 MICHIGAN ST","1999 OKLAHOMA","1999 KENTUCKY","1999 MIAMI OHIO","1999 AUBURN","1999 OHIO ST","1999 ST JOHNS","1999 MARYLAND","1999 CONNECTICUT","1999 IOWA","1999 FLORIDA","1999 GONZAGA"];
+		
+		presetList["2"]["1998"] = ["1998 KENTUCKY","1998 UTAH"];
+		presetList["4"]["1998"] = ["1998 N CAROLINA","1998 UTAH","1998 KENTUCKY","1998 STANFORD"];
+		presetList["8"]["1998"] = ["1998 N CAROLINA","1998 CONNECTICUT","1998 ARIZONA","1998 UTAH","1998 DUKE","1998 KENTUCKY","1998 RHODE ISLAND","1998 STANFORD"];
+		presetList["16"]["1998"] = ["1998 N CAROLINA","1998 MICHIGAN ST","1998 WASHINGTON","1998 CONNECTICUT","1998 ARIZONA","1998 MARYLAND","1998 UTAH","1998 W VIRGINIA","1998 DUKE","1998 SYRACUSE","1998 UCLA","1998 KENTUCKY","1998 RHODE ISLAND","1998 VALPARAISO","1998 STANFORD","1998 PURDUE"];
+		
+		presetList["16"]["Champions"] = ["2012 KENTUCKY","2012 KENTUCKY","2005 N CAROLINA", "2004 CONNECTICUT", "2009 N CAROLINA", "2000 MICHIGAN ST", "2008 KANSAS", "2001 DUKE", "2011 CONNECTICUT", "1998 KENTUCKY", "2006 FLORIDA", "2003 SYRACUSE", "2010 DUKE", "1999 CONNECTICUT", "2007 FLORIDA", "2002 MARYLAND"]
+		
 		{% if selectedTeams %}
 			$(document).ready(function() {
 				var selectedTeams = [{% for team in selectedTeams %}
@@ -20,7 +103,7 @@
 				}
 			});
 		{% endif %}
-		
+		 
 		$(document).ready(function(){
 			$('#number_of_games').change(function() {
 				var numGames = parseInt($(this)[0].options[$(this)[0].options.selectedIndex].text);
@@ -31,6 +114,15 @@
 				
 				for (var i=numGames+1; i<=32; i++) {
 					$('#team'+i.toString()).hide();
+				}
+				
+				$("#previous_tournaments").val("Previous Tournaments");
+			});
+			
+			$('#previous_tournaments').change(function() { 	
+				var numGames = $('#number_of_games').val();
+				for(var i = 0; i < numGames; i++) {
+					$('#teamdropdown' + (i+1)).val(presetList[numGames][$(this).val()][i]);
 				}
 			});
 		});
@@ -46,11 +138,27 @@
 		<option value="cluster"
 				{% ifequal classifier "cluster" %}
 					selected="true"
-				{% endifequal %}>Cluster (simple)</option>
-		<option value="cluster_normalize"
-				{% ifequal classifier "cluster_normalize" %}
+				{% endifequal %}>2-Cluster (simple)</option>
+		<option value="3-cluster"
+				{% ifequal classifier "3-cluster" %}
 					selected="true"
-				{% endifequal %}>Cluster (normalize)</option>
+				{% endifequal %}>3-Cluster (simple)</option>
+		<option value="4-cluster"
+				{% ifequal classifier "4-cluster" %}
+					selected="true"
+				{% endifequal %}>4-Cluster (simple)</option>
+		<option value="cluster_weighted"
+				{% ifequal classifier "cluster_weighted" %}
+					selected="true"
+				{% endifequal %}>2-Cluster (weighted)</option>
+		<option value="3-cluster_weighted"
+				{% ifequal classifier "3-cluster_weighted" %}
+					selected="true"
+				{% endifequal %}>3-Cluster (weighted)</option>
+		<option value="4-cluster_weighted"
+				{% ifequal classifier "4-cluster_weighted" %}
+					selected="true"
+				{% endifequal %}>4-Cluster (weighted)</option>
 		<option value="decision_tree"
 				{% ifequal classifier "decision_tree" %}
 					selected="true"
@@ -59,10 +167,18 @@
 				{% ifequal classifier "naive_bayes" %}
 					selected="true"
 				{% endifequal %}>Naive Bayes (simple)</option>
+		<option value="naive_bayes_stripped"
+				{% ifequal classifier "naive_bayes_stripped" %}
+					selected="true"
+				{% endifequal %}>Naive Bayes (stripped)</option>
 		<option value="naive_bayes_ranking"
 				{% ifequal classifier "naive_bayes_ranking" %}
 					selected="true"
 				{% endifequal %}>Naive Bayes (ranking)</option>
+		<option value="naive_bayes_ranking_stripped"
+				{% ifequal classifier "naive_bayes_ranking_stripped" %}
+					selected="true"
+				{% endifequal %}>Naive Bayes (ranking, stripped)</option>
 	</select>
 	<select id="number_of_games" name="number_of_games">
 		<option value="2"
@@ -86,6 +202,25 @@
 					selected="true"
 				{% endifequal %}>32</option>
 	</select>
+	<select id="previous_tournaments">
+		<option>Previous Tournaments</option>
+		<option value="1998">1998</option>
+		<option value="1999">1999</option>
+		<option value="2000">2000</option>
+		<option value="2001">2001</option>
+		<option value="2002">2002</option>
+		<option value="2003">2003</option>
+		<option value="2004">2004</option>
+		<option value="2005">2005</option>
+		<option value="2006">2006</option>
+		<option value="2007">2007</option>
+		<option value="2008">2008</option>
+		<option value="2009">2009</option>
+		<option value="2010">2010</option>
+		<option value="2011">2011</option>
+		<option value="2012">2012</option>
+		<option value="Champions">Champions</option>
+	</select>
 	<table class="bracketList">
 		<tr>
 			<td>
@@ -96,7 +231,7 @@
 						style="display: none;"
 					{% endif %}>
 					<td>
-						<select class="teamList" name="team{{i}}">
+						<select class="teamList" id="teamdropdown{{i}}" name="team{{i}}">
 							{% for team in teams %}
 								<option value="{{team.year}} {{team.teamname}}">
 									{{team.year}} {{team.teamname}}

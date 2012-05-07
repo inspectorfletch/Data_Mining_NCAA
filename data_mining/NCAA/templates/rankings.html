@@ -20,7 +20,8 @@
 								 
 		$(document).ready(function(){
 			$('.teamname').each(function(){
-				if ($(this).html() == nationalChampions[{{year}}]) {
+				var teamname = $.trim($(this).html().split('(')[0]);
+				if (teamname == nationalChampions[{{year}}]) {
 					$(this).addClass('nationalChamp');
 				}
 			});
@@ -39,12 +40,22 @@
 						{% endifequal %}>{{ yearVal }}</option>
 			{% endfor %}
 		</select>
+		<select id="ranker" name="ranker">
+			<option value="simple"
+					{% ifequal ranker "simple" %}
+						selected="true"
+					{% endifequal %}>Simple</option>
+			<option value="stripped"
+					{% ifequal ranker "stripped" %}
+						selected="true"
+					{% endifequal %}>Stripped</option>
+		</select>
 		<input type="submit" name="rank" value="Rank!"/>
 	</form>
 	<ol>
 	{% for ranking in rankings %}
 		<li>
-			<p class="teamname">{{ ranking.2 }}</p>
+			<p class="teamname">{{ ranking.2 }} ({{ ranking.0|floatformat:4 }})</p>
 		</li>
 	{% endfor %}
 	</ol>
